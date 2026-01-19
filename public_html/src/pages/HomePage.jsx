@@ -1,82 +1,160 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Phone, ArrowRight, CheckCircle, MapPin } from 'lucide-react'; // Removi Star e Quote
+import { Phone, ArrowRight, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PHONE_NUMBER } from '@/constants/colors';
 import WhyFamiliesTrustUs from '@/components/WhyFamiliesTrustUs';
+
+// Componente Pequeno para o Slide de Fotos do Projeto
+const ProjectCard = ({ project, index }) => {
+  const [currentImage, setCurrentImage] = useState(0);
+
+  const nextImage = (e) => {
+    e.preventDefault();
+    setCurrentImage((prev) => (prev + 1) % project.images.length);
+  };
+
+  const prevImage = (e) => {
+    e.preventDefault();
+    setCurrentImage((prev) => (prev - 1 + project.images.length) % project.images.length);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.1 }}
+      className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col h-full"
+    >
+      <div className="relative h-64 bg-gray-200">
+        {/* Imagem Atual */}
+        <img 
+          src={project.images[currentImage]} 
+          alt={`${project.title} - View ${currentImage + 1}`}
+          onError={(e) => {e.target.style.display = 'none'; e.target.parentNode.style.backgroundColor = '#ccc'}}
+          className="w-full h-full object-cover"
+        />
+        
+        {/* Setas de Navegação (Só aparecem se tiver mais de 1 foto) */}
+        {project.images.length > 1 && (
+          <>
+            <button 
+              onClick={prevImage}
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-1 rounded-full hover:bg-black/70"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </button>
+            <button 
+              onClick={nextImage}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-1 rounded-full hover:bg-black/70"
+            >
+              <ChevronRight className="h-6 w-6" />
+            </button>
+            {/* Bolinhas indicadoras */}
+            <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
+              {project.images.map((_, idx) => (
+                <div 
+                  key={idx} 
+                  className={`h-2 w-2 rounded-full ${idx === currentImage ? 'bg-white' : 'bg-white/50'}`} 
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      <div className="p-6 flex flex-col flex-grow">
+        <h3 className="text-xl font-bold mb-2 text-[#3C3B6E]">{project.title}</h3>
+        <div className="flex items-center text-[#B22234] mb-3">
+          <MapPin className="h-4 w-4 mr-1" />
+          <span className="text-sm font-medium">{project.location}</span>
+        </div>
+        <p className="text-gray-600 text-sm mb-4 flex-grow">
+          {project.description}
+        </p>
+      </div>
+    </motion.div>
+  );
+};
 
 function HomePage() {
   const handleCallNow = () => {
     window.location.href = `tel:${PHONE_NUMBER}`;
   };
 
-  // Mantive os serviços como estavam, pois usam boas imagens de representação.
-  // Se quiseres mudar estas fotos depois, diz-me.
+  // Lista de Serviços Atualizada (Sem Full Remodel, Cabinets renomeado)
   const services = [
     {
       title: 'Tile & Stone',
-      description: 'Expert tile and stone installation for kitchens, bathrooms, and more',
+      description: 'Expert installation for kitchens, bathrooms, and floors.',
       path: '/services/tile-stone',
-      image: 'https://images.unsplash.com/photo-1432303469531-1f834b81f1aa'
-    },
-    {
-      title: 'Drywall',
-      description: 'Professional drywall installation, repair, and finishing',
-      path: '/services/drywall',
-      image: 'https://images.unsplash.com/photo-1629195352955-850830e4d6c9'
-    },
-    {
-      title: 'Painting',
-      description: 'Interior and exterior painting with premium quality finishes',
-      path: '/services/painting',
-      image: 'https://images.unsplash.com/photo-1650939314857-4e5f60b10dbe'
-    },
-    {
-      title: 'Cabinets',
-      description: 'Custom cabinet installation and refinishing services',
-      path: '/services/cabinets',
-      image: 'https://images.unsplash.com/photo-1643949915134-73a4c880f7c7'
+      image: '/images/services/tile.jpeg' 
     },
     {
       title: 'Bathrooms',
-      description: 'Complete bathroom remodeling and renovation',
+      description: 'Complete bathroom renovation from demolition to finish.',
       path: '/services/bathrooms',
-      image: 'https://images.unsplash.com/photo-1699270148023-3c98cc2e8cfc'
+      image: '/images/services/bathrooms.jpeg'
     },
     {
-      title: 'Full Remodeling',
-      description: 'Comprehensive home renovation from start to finish',
-      path: '/services/full-remodeling',
-      image: 'https://images.unsplash.com/photo-1562188208-a02e9abcda84'
+      title: 'Cabinet Installation', // Renomeado
+      description: 'Professional installation of pre-fabricated cabinets.', // Descrição nova
+      path: '/services/cabinets',
+      image: '/images/services/cabinets.jpeg'
+    },
+    {
+      title: 'Drywall Repair',
+      description: 'Water damage repair and texture matching.',
+      path: '/services/drywall',
+      image: '/images/services/drywall.jpeg'
+    },
+    {
+      title: 'Painting',
+      description: 'Interior and exterior painting application.',
+      path: '/services/painting',
+      image: '/images/services/painting.jpeg'
     }
   ];
 
-  // AQUI: Configuração para as tuas fotos reais
+  // SEUS PROJETOS REAIS - Configure aqui
+  // Você pode por 1, 2 ou 3 fotos na lista "images"
   const recentProjects = [
     {
-      image: '/images/projects/banheiro-master.jpg', // Certifica-te que a foto existe nesta pasta
+      images: [
+        '/images/projects/proj1-depois.jpeg',
+        '/images/projects/proj1-durante.jpeg',
+        '/images/projects/proj1-antes.jpeg'
+      ], 
       title: 'Master Bathroom Remodel',
-      location: 'Land O Lakes, FL'
+      location: 'Land O Lakes, FL',
+      description: 'Complete demo and installation of new porcelain tile, vanity setup, and shower waterproofing.'
     },
     {
-      image: '/images/projects/piso-sala.jpg',
-      title: 'Porcelain Tile Installation',
-      location: 'Wesley Chapel, FL'
+      images: [
+        '/images/projects/proj2-final.jpeg'
+      ],
+      title: 'Living Room Flooring',
+      location: 'Wesley Chapel, FL',
+      description: 'Removed old carpet and installed wood-look tile with precision leveling system.'
     },
     {
-      image: '/images/projects/backsplash-cozinha.jpg',
+      images: [
+        '/images/projects/proj3-kitchen.jpeg'
+      ],
       title: 'Kitchen Backsplash',
-      location: 'Lutz, FL'
+      location: 'Lutz, FL',
+      description: 'Custom subway tile installation with accent strips.'
     }
   ];
 
   return (
     <div className="flex flex-col min-h-screen">
       <Helmet>
-        <title>All American Restorations | Family-Owned Construction in Land O Lakes, FL</title>
-        <meta name="description" content="Trusted family-owned construction company in Land O Lakes, FL. Specializing in tile, drywall, painting, and remodeling. Quality craftsmanship you can rely on." />
+        <title>All American Restorations | Tile, Drywall & Painting in Land O Lakes, FL</title>
+        <meta name="description" content="Family-owned business in Land O Lakes specialized in Tile, Flooring, Drywall Repair, and Painting. Quality craftsmanship you can trust." />
       </Helmet>
 
       {/* Hero Section */}
@@ -102,7 +180,7 @@ function HomePage() {
             className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto"
           >
             A family-owned business serving Land O Lakes and surrounding areas.
-            Specializing in Tile, Drywall, Painting, and Remodeling.
+            We treat your home like our own.
           </motion.p>
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -132,7 +210,7 @@ function HomePage() {
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-[#3C3B6E]">Our Expert Services</h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              From small repairs to major renovations, we treat every project with the care and attention it deserves.
+              Focused on what we do best: Tile, Drywall, Painting, and Cabinets.
             </p>
           </div>
           
@@ -150,6 +228,7 @@ function HomePage() {
                   <img 
                     src={service.image} 
                     alt={service.title}
+                    onError={(e) => {e.target.style.display = 'none'; e.target.parentNode.style.backgroundColor = '#ccc'}}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 </div>
@@ -166,39 +245,19 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Recent Projects Section - Updated to use real projects */}
+      {/* Recent Projects Section - Updated with Carousel */}
       <section className="py-20 bg-white">
         <div className="container px-4 mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-[#3C3B6E]">Our Recent Work</h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Take a look at some of the projects we've completed for families in our community.
+              Real projects completed for families in our community.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {recentProjects.map((project, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="group relative overflow-hidden rounded-xl shadow-lg aspect-[4/3]"
-              >
-                <img 
-                  src={project.image} 
-                  alt={project.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
-                  <h3 className="text-white text-xl font-bold mb-1">{project.title}</h3>
-                  <div className="flex items-center text-gray-200">
-                    <MapPin className="h-4 w-4 mr-1" />
-                    <span className="text-sm">{project.location}</span>
-                  </div>
-                </div>
-              </motion.div>
+              <ProjectCard key={index} project={project} index={index} />
             ))}
           </div>
           
@@ -217,7 +276,7 @@ function HomePage() {
         <div className="container px-4 mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Start Your Project?</h2>
           <p className="text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
-            Contact us today for a free consultation and estimate. Let's make your home beautiful together.
+            Contact us today for a free consultation and estimate.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="bg-[#B22234] hover:bg-[#8b1b29] text-white text-lg px-8 py-6" onClick={handleCallNow}>
